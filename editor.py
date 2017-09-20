@@ -9,7 +9,9 @@ LIMIT_FPS = 20
 
 class Buffer(object):
     '''Gets pushed to the window and then blitted to the console'''
-    pass
+
+    def __init__(self, text):
+        self.text = text
 
 
 class Cursor(object):
@@ -18,9 +20,10 @@ class Cursor(object):
     def __init__(self, x, y, console):
         self.x = x
         self.y = y
+        self.con = console # The console has to be passed because of scoping issues
         self.char = 221
         self.colour = 0xFFFFFF
-        self.con = console
+        self.flash = True
 
     def move(self, dx, dy):
         # Moves the cursor by the given amount
@@ -35,10 +38,14 @@ class Cursor(object):
         # Erase the cursor
         self.con.draw_char(self.x, self.y, ' ', self.colour, bg=None)
 
+    def position(self):
+        return self.x, self.y
+
 
 def keybinds():
 
     pass
+
 
 ##############################
 # Initialisation & Main Loop #
@@ -47,11 +54,12 @@ def keybinds():
 def main():
     tdl.set_font('terminal16x16_gs_ro.png', greyscale=True, altLayout=False)
     root = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="tdl text editor", fullscreen=False)
-    tdl.setFPS(LIMIT_FPS)
     con = tdl.Console(SCREEN_WIDTH, SCREEN_HEIGHT)
+    tdl.setFPS(LIMIT_FPS)
 
-    cursor = Cursor(0, 0, con)
+    cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
 
+    # main loop 
     while not tdl.event.is_window_closed():
 
         cursor.draw()

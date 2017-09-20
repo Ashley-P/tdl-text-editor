@@ -4,7 +4,7 @@
 ## Introduction
 -------------
 
-A text editor written using Python3.6 and tdl. Inspired by vi/vim
+A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 
 ## Usage
 -------------
@@ -16,4 +16,16 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim
 ## Features
 -------------
 
-* You can type
+- [ ] Keybinds
+	- [ ] Inputting normal characters ([a-z] etc)
+	- [ ] Carriage returns
+	- [ ] Backspaces
+	- [ ] vim-like keybinds
+- [ ] Buffer system
+	- [ ] Scrolling
+	- [ ] Text wrapping
+	- [ ] Saving
+	- [ ] Loading
+- [ ] Resizable window
+- [ ] Line numbering
+- [ ] Syntax highlighting
