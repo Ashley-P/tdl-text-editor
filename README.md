@@ -17,10 +17,13 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 -------------
 
 - [ ] Keybinds
-	- [ ] Inputting normal characters ([a-z] etc)
+	- [x] Inputting normal characters ([a-z] etc)
 	- [ ] Carriage returns
 	- [ ] Backspaces
+	- [ ] Spaces
+	- [ ] Tabs
 	- [ ] vim-like keybinds
+	- [ ] Insert
 - [ ] Buffer system
 	- [ ] Scrolling
 	- [ ] Text wrapping
