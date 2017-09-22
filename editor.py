@@ -15,9 +15,12 @@ class Buffer(object):
 
     def __init__(self, text):
         self.text = text
+        self.colour = 0xFFFFFF
 
     def draw(self):
-        pass
+        for i in range(len(self.text)):
+            for j in range(len(self.text[i])):
+                con.draw_char(j, i, self.text[i][j], self.colour, bg = None) 
 
     def clear(self):
         pass
@@ -28,7 +31,7 @@ class Buffer(object):
         else:
             self.text[0] = self.text[0][:cursor.getpos()[0]] + char + self.text[0][cursor.getpos()[0]:]
 
-        cursor.move(2, 0)
+        cursor.move(1, 0)
         print(cursor.getpos())
         print(self.text)
 
@@ -72,7 +75,6 @@ def handle_keys():
             print(user_input.keychar)
             if len(user_input.keychar) == 1:
                 current_buffer.addchar(user_input.keychar)
-                cursor.move(1, 0)
             else:
                 pass
             keypress = True
@@ -98,6 +100,7 @@ if __name__ == "__main__":
     while not tdl.event.is_window_closed():
 
         cursor.draw()
+        current_buffer.draw()
 
         root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
         tdl.flush()
