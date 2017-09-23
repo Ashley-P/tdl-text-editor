@@ -39,16 +39,21 @@ class Buffer(object):
         '''Adds a character to the buffer'''
         if len(self.text[cursor.getpos()[1]]) == 0:
             self.text[cursor.getpos()[1]] = char
-            cursor.move(1, 0)
         else:
             self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] +
             char + 
             self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
-            cursor.move(1, 0)
+        # Don't indent this
+        cursor.move(1, 0)
 
     def delchar(self):
         if len(self.text[cursor.getpos()[1]]) == 0:
-            pass
+            if cursor.getpos()[1] - 1 < 0:
+                pass
+            else:
+                del self.text[cursor.getpos()[1]]
+                cursor.move(0, -1)
+                cursor.setpos(dx=len(self.text[cursor.getpos()[1] - 1]))
         else:
             try:
                 self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] + 
@@ -58,6 +63,10 @@ class Buffer(object):
             finally:
                 cursor.move(-1, 0)
 
+    def newline(self):
+        self.text.append('')
+        cursor.setpos(dx=0)
+        cursor.move(0, 1)
 
 class Cursor(object):
     '''Dictates where the keybindings are invoked'''
@@ -102,7 +111,8 @@ class Cursor(object):
 
 def handle_keys():
     commands = {'SPACE'    : lambda:current_buffer.addchar(' '),
-                'BACKSPACE': current_buffer.delchar}
+                'BACKSPACE': current_buffer.delchar,
+                'ENTER'    : current_buffer.newline}
 
     keypress = False
     for event in tdl.event.get(): # Getting events
