@@ -15,7 +15,6 @@ ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 # Keybinds #
 ############
 
-
 class Buffer(object):
     '''Holds, all the text that is supposed to be displayed on screen.
        Gets pushed to the window and then blitted to the console'''
@@ -32,14 +31,28 @@ class Buffer(object):
 
     def clear(self):
         '''Clears the buffer from the console'''
-        pass
+        for i in range(len(self.text)):
+            for j in range(len(self.text[i])):
+                con.draw_char(j, i, ' ', self.colour, bg = None) 
 
     def addchar(self, char):
         '''Adds a character to the buffer'''
-        if self.text[0] == '':
+        if len(self.text[0]) == 0:
             self.text[0] = char
         else:
             self.text[0] = self.text[0][:cursor.getpos()[0]] + char + self.text[0][cursor.getpos()[0]:]
+        cursor.move(1, 0)
+
+    def delchar(self):
+        if len(self.text[0]) == 0:
+            pass
+        else:
+            try:
+                self.text[0] = self.text[0][:cursor.getpos()[0]] + self.text[0][cursor.getpos()[0] + 1]
+            except IndexError:
+                self.text[0] = self.text[0][:-1]
+            finally:
+                cursor.move(-1, 0)
 
 
 class Cursor(object):
@@ -75,26 +88,34 @@ class Cursor(object):
 
 
 def handle_keys():
-    
+    commands = {'SPACE'    : lambda:current_buffer.addchar(' '),
+                'BACKSPACE': current_buffer.delchar}
+
     keypress = False
     for event in tdl.event.get(): # Getting events
         if event.type == 'KEYDOWN': # Making sure the event is a keypress
             user_input = event
-
+            
+            # All keybinds go here
             if len(user_input.keychar) == 1: # For single characters
                 if user_input.shift == True:
+                    # While pressing shift
                     current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'))
                 else:
+                    # Without pressing shift
                     current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'))
 
-                cursor.move(1, 0)
-
             else:
-                pass
+                commands.get(user_input.keychar, nothing)()
 
             keypress = True
         if not keypress: # Because it is realtime
             return
+
+
+def nothing():
+    pass
+
 
 
 ##############################
@@ -115,8 +136,8 @@ if __name__ == "__main__":
     # main loop 
     while not tdl.event.is_window_closed():
 
-        cursor.draw()
         current_buffer.draw()
+        cursor.draw()
 
         root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
         tdl.flush()
