@@ -22,7 +22,7 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [x] Carriage returns
 	- [x] Backspaces
 	- [x] Spaces
-	- [ ] Tabs
+	- [x] Tabs
 	- [ ] vim-like keybinds
 	- [ ] Insert
 - [ ] Buffer system

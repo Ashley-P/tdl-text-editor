@@ -110,9 +110,10 @@ class Cursor(object):
 
 
 def handle_keys():
-    commands = {'SPACE'    : lambda:current_buffer.addchar(' '),
+    commands = {'SPACE'    : lambda: current_buffer.addchar(' '),
                 'BACKSPACE': current_buffer.delchar,
-                'ENTER'    : current_buffer.newline}
+                'ENTER'    : current_buffer.newline,
+                'TAB'      : lambda: [current_buffer.addchar(' ') for x in range(4)]}
 
     keypress = False
     for event in tdl.event.get(): # Getting events
