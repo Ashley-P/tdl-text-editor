@@ -37,20 +37,24 @@ class Buffer(object):
 
     def addchar(self, char):
         '''Adds a character to the buffer'''
-        if len(self.text[0]) == 0:
-            self.text[0] = char
+        if len(self.text[cursor.getpos()[1]]) == 0:
+            self.text[cursor.getpos()[1]] = char
+            cursor.move(1, 0)
         else:
-            self.text[0] = self.text[0][:cursor.getpos()[0]] + char + self.text[0][cursor.getpos()[0]:]
-        cursor.move(1, 0)
+            self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] +
+            char + 
+            self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
+            cursor.move(1, 0)
 
     def delchar(self):
-        if len(self.text[0]) == 0:
+        if len(self.text[cursor.getpos()[1]]) == 0:
             pass
         else:
             try:
-                self.text[0] = self.text[0][:cursor.getpos()[0]] + self.text[0][cursor.getpos()[0] + 1]
+                self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] + 
+                self.text[cursor.getpos()[1]][cursor.getpos()[0] + 1])
             except IndexError:
-                self.text[0] = self.text[0][:-1]
+                self.text[cursor.getpos()[1]] = self.text[cursor.getpos()[1]][:-1]
             finally:
                 cursor.move(-1, 0)
 
@@ -77,10 +81,19 @@ class Cursor(object):
         self.x += dx
         self.y += dy
 
-    def setpos(self, dx, dy):
-        '''Directly set the position of the cursor on the screen'''
-        self.x = dx
-        self.y = dy
+    def setpos(self, dx=None, dy=None):
+        '''Directly set the position of the cursor on the screen
+           If No value is passed, then the cursor just moves along
+           that axis'''
+        if dx == None:
+            pass
+        else:
+            self.x = dx
+        
+        if dy == None:
+            pass
+        else:
+            self.y = dy
 
     def getpos(self):
         '''Gets the position of the cursor and returns it as a tuple'''

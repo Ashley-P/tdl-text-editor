@@ -20,8 +20,8 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [x] Inputting normal characters ([a-z] etc)
 		- [x] Inputting shift + character([A-Z] etc)
 	- [ ] Carriage returns
-	- [ ] Backspaces
-	- [ ] Spaces
+	- [x] Backspaces
+	- [x] Spaces
 	- [ ] Tabs
 	- [ ] vim-like keybinds
 	- [ ] Insert
