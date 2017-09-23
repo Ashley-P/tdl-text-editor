@@ -1,12 +1,19 @@
 import tdl
+import keybinds
 
 
 
+#############
+# Constants #
+#############
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
-LIMIT_FPS = 20
-AlPHA = 'abcdefghijklmnopqrstuvwxyz'
+LIMIT_FPS = 60
+ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 
+############
+# Keybinds #
+############
 
 
 class Buffer(object):
@@ -18,22 +25,21 @@ class Buffer(object):
         self.colour = 0xFFFFFF
 
     def draw(self):
+        '''Draws the buffer to the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
                 con.draw_char(j, i, self.text[i][j], self.colour, bg = None) 
 
     def clear(self):
+        '''Clears the buffer from the console'''
         pass
 
     def addchar(self, char):
+        '''Adds a character to the buffer'''
         if self.text[0] == '':
             self.text[0] = char
         else:
             self.text[0] = self.text[0][:cursor.getpos()[0]] + char + self.text[0][cursor.getpos()[0]:]
-
-        cursor.move(1, 0)
-        print(cursor.getpos())
-        print(self.text)
 
 
 class Cursor(object):
@@ -42,43 +48,52 @@ class Cursor(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.char = 221
+        self.char = '221'
         self.colour = 0xFFFFFF
 
     def draw(self):
-        # Draws the cursor
+        '''Draws the cursor'''
         con.draw_char(self.x, self.y, self.char, self.colour, bg=None)
 
     def clear(self):
-        # Erase the cursor
+        '''Erase the cursor'''
         con.draw_char(self.x, self.y, ' ', self.colour, bg=None)
 
     def move(self, dx, dy):
-        # Moves the cursor by the given amount
+        '''Moves the cursor by the given amount'''
         self.x += dx
         self.y += dy
 
     def setpos(self, dx, dy):
+        '''Directly set the position of the cursor on the screen'''
         self.x = dx
         self.y = dy
 
     def getpos(self):
+        '''Gets the position of the cursor and returns it as a tuple'''
         return (self.x, self.y)
 
 
 def handle_keys():
     
     keypress = False
-    for event in tdl.event.get():
-        if event.type == 'KEYDOWN':
+    for event in tdl.event.get(): # Getting events
+        if event.type == 'KEYDOWN': # Making sure the event is a keypress
             user_input = event
-            print(user_input.keychar)
-            if len(user_input.keychar) == 1:
-                current_buffer.addchar(user_input.keychar)
+
+            if len(user_input.keychar) == 1: # For single characters
+                if user_input.shift == True:
+                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'))
+                else:
+                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'))
+
+                cursor.move(1, 0)
+
             else:
                 pass
+
             keypress = True
-        if not keypress:
+        if not keypress: # Because it is realtime
             return
 
 
@@ -93,7 +108,8 @@ if __name__ == "__main__":
 
     # Other initialisation
     cursor = Cursor(0, 0) # Invoking the cursor, you should only have to do this once
-    buffer1 = Buffer(['']) # Passing an empty array because that's how I have styled the system
+    buffer1 = Buffer(['']) # Passing an empty array with an empty string
+    keys = keybinds.Keybinds()
     current_buffer = buffer1
 
     # main loop 
