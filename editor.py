@@ -17,7 +17,8 @@ ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 
 class Buffer(object):
     '''Holds, all the text that is supposed to be displayed on screen.
-       Gets pushed to the window and then blitted to the console'''
+    Gets pushed to the window and then blitted to the console
+    '''
 
     def __init__(self, text):
         self.text = text
@@ -92,8 +93,9 @@ class Cursor(object):
 
     def setpos(self, dx=None, dy=None):
         '''Directly set the position of the cursor on the screen
-           If No value is passed, then the cursor just moves along
-           that axis'''
+        If No value is passed, then the cursor just moves along
+        that axis
+        '''
         if dx == None:
             pass
         else:
@@ -110,10 +112,62 @@ class Cursor(object):
 
 
 def handle_keys():
+    '''Handles all the keypresses.
+    Arrow keys are defined here because they won't be used elsewhere
+    '''
+
+    def up():
+        if cursor.getpos()[1] != 0:
+            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] - 1]:
+                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+                cursor.move(0, -1)
+            else:
+                cursor.move(0, -1)
+        else:
+            pass
+
+
+    def down():
+        if cursor.getpos()[1] != (len(current_buffer.text) - 1):
+            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] - 1]:
+                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+                cursor.move(0, 1)
+            else:
+                cursor.move(0, 1)
+        else:
+            pass
+
+    def left():
+        if cursor.getpos()[0] == 0:
+            if cursor.getpos()[1] != 0:
+                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+                cursor.move(0, -1)
+            else:
+                pass
+        else:
+            cursor.move(-1, 0)
+
+    def right():
+        if cursor.getpos()[0] == len(current_buffer.text[cursor.getpos()[1]]):
+            if cursor.getpos()[1] < (len(current_buffer.text) - 1):
+                cursor.setpos(dx=0)
+                cursor.move(0, 1)
+            else:
+                pass
+        else:
+            cursor.move(1, 0)
+
+    def nothing():
+        pass
+
     commands = {'SPACE'    : lambda: current_buffer.addchar(' '),
                 'BACKSPACE': current_buffer.delchar,
                 'ENTER'    : current_buffer.newline,
-                'TAB'      : lambda: [current_buffer.addchar(' ') for x in range(4)]}
+                'TAB'      : lambda: [current_buffer.addchar(' ') for x in range(4)],
+                'UP'       : up,
+                'DOWN'     : down,
+                'LEFT'     : left,
+                'RIGHT'    : right}
 
     keypress = False
     for event in tdl.event.get(): # Getting events
@@ -135,11 +189,6 @@ def handle_keys():
             keypress = True
         if not keypress: # Because it is realtime
             return
-
-
-def nothing():
-    pass
-
 
 
 ##############################
