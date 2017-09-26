@@ -22,6 +22,7 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [x] Carriage returns
 		- [ ] Carriage Returns insert a line break
 	- [x] Backspaces
+		- [x] Backspaces append the current line to the one above
 	- [x] Spaces
 	- [x] Tabs
 	- [ ] vim-like keybinds
