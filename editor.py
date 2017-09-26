@@ -181,8 +181,6 @@ def handle_keys():
         else:
             pass
 
-    def nothing():
-        pass
 
 
     commands = {'SPACE'    : space,
