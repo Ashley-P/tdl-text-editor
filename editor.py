@@ -108,8 +108,12 @@ def handle_keys():
     '''
 
     def up():
+        # Moving the cursor upwards if cursor position y isn't 0
         if cursor.getpos()[1] != 0:
-            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] - 1]:
+            # Moving the cursor to the left is the line above is shorter than the current one
+            if (len(current_buffer.text[cursor.getpos()[1]]) >
+                len(current_buffer.text[cursor.getpos()[1] - 1])):
+
                 cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
                 cursor.move(0, -1)
             else:
@@ -118,9 +122,13 @@ def handle_keys():
             pass
 
     def down():
+        # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
         if cursor.getpos()[1] != (len(current_buffer.text) - 1):
-            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] + 1]:
-                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+            # Moving the cursor to the left is the line below is shorter than the current one
+            if (len(current_buffer.text[cursor.getpos()[1]]) >
+                len(current_buffer.text[cursor.getpos()[1] + 1])):
+
+                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] + 1]))
                 cursor.move(0, 1)
             else:
                 cursor.move(0, 1)
