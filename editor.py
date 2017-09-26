@@ -23,18 +23,19 @@ class Buffer(object):
     def __init__(self, text):
         self.text = text
         self.colour = 0xFFFFFF
+        self.bg = 0x000000
 
     def draw(self):
         '''Draws the buffer to the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
-                con.draw_char(j, i, self.text[i][j], self.colour, bg = None) 
+                con.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
 
     def clear(self):
         '''Clears the buffer from the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
-                con.draw_char(j, i, ' ', self.colour, bg = None) 
+                con.draw_char(j, i, ' ', self.colour, bg=self.bg) 
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
@@ -69,14 +70,22 @@ class Cursor(object):
         self.y = y
         self.char = '221'
         self.colour = 0xFFFFFF
+        self.bg = 0x000000
 
     def draw(self):
         '''Draws the cursor'''
-        con.draw_char(self.x, self.y, self.char, self.colour, bg=None)
+        try:
+            self.textchar = current_buffer.text[self.y][self.x] 
+            if self.textchar != ' ':
+                con.draw_char(self.x, self.y, self.textchar, self.bg, bg=self.colour)
+            else:
+                con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
+        except IndexError:
+            con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
 
     def clear(self):
         '''Erase the cursor'''
-        con.draw_char(self.x, self.y, ' ', self.colour, bg=None)
+        con.draw_char(self.x, self.y, ' ', self.colour, bg=self.bg)
 
     def move(self, dx, dy):
         '''Moves the cursor by the given amount'''
@@ -216,6 +225,10 @@ def handle_keys():
         cursor.setpos(dx=0)
         cursor.move(0, 1)
 
+    def tab(curs_x, curs_y):
+        current_buffer.addchar('    ', curs_x, curs_y)
+        cursor.move(4, 0)
+
     def nothing():
         pass
 
@@ -226,7 +239,8 @@ def handle_keys():
                 'RIGHT'    : lambda : right(*cursor.getpos()),
                 'SPACE'    : lambda : space(*cursor.getpos()),
                 'BACKSPACE': lambda : backspace(*cursor.getpos()),
-                'ENTER'    : lambda : enter(*cursor.getpos())}
+                'ENTER'    : lambda : enter(*cursor.getpos()),
+                'TAB'      : lambda : tab(*cursor.getpos())}
 
 
     keypress = False
