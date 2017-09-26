@@ -38,6 +38,7 @@ class Buffer(object):
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
+        # You can insert multiple characters with 1 call
         # First character of a line
         if len(self.text[y]) == 0:
             self.text[y] = char
@@ -102,47 +103,47 @@ class Cursor(object):
 def handle_keys():
     '''Handles all the keypresses.
     Certain commands are defined here because they won't be used elsewhere
+    curs_x == cursor.getpos()[0]
+    curs_y == cursor.getpos()[1]
     '''
 
-    def up():
+    def up(curs_x, curs_y):
         # Moving the cursor upwards if cursor position y isn't 0
-        if cursor.getpos()[1] != 0:
+        if curs_y != 0:
             # Moving the cursor to the left is the line above is shorter than the current one
-            if (len(current_buffer.text[cursor.getpos()[1]]) >
-                len(current_buffer.text[cursor.getpos()[1] - 1])):
-
-                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+            if (len(current_buffer.text[curs_y]) > len(current_buffer.text[curs_y - 1])):
+                cursor.setpos(dx=len(current_buffer.text[curs_y - 1]))
                 cursor.move(0, -1)
             else:
                 cursor.move(0, -1)
         else:
             pass
 
-    def down():
+    def down(curs_x, curs_y):
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
-        if cursor.getpos()[1] != (len(current_buffer.text) - 1):
+        if curs_y != (len(current_buffer.text) - 1):
             # Moving the cursor to the left is the line below is shorter than the current one
-            if cursor.getpos()[0] > len(current_buffer.text[cursor.getpos()[1] + 1]):
-                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] + 1]))
+            if curs_x > len(current_buffer.text[curs_y + 1]):
+                cursor.setpos(dx=len(current_buffer.text[curs_y + 1]))
                 cursor.move(0, 1)
             else:
                 cursor.move(0, 1)
         else:
             pass
 
-    def left():
-        if cursor.getpos()[0] == 0:
-            if cursor.getpos()[1] != 0:
-                cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
+    def left(curs_x, curs_y):
+        if curs_x == 0:
+            if curs_y != 0:
+                cursor.setpos(dx=len(current_buffer.text[curs_y - 1]))
                 cursor.move(0, -1)
             else:
                 pass
         else:
             cursor.move(-1, 0)
 
-    def right():
-        if cursor.getpos()[0] == len(current_buffer.text[cursor.getpos()[1]]):
-            if cursor.getpos()[1] < (len(current_buffer.text) - 1):
+    def right(curs_x, curs_y):
+        if curs_x == len(current_buffer.text[curs_y]):
+            if curs_y < (len(current_buffer.text) - 1):
                 cursor.setpos(dx=0)
                 cursor.move(0, 1)
             else:
@@ -150,53 +151,52 @@ def handle_keys():
         else:
             cursor.move(1, 0)
 
-    def space():
-        current_buffer.addchar(' ', *cursor.getpos())
+    def space(curs_x, curs_y):
+        current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
-    def backspace():
+    def backspace(curs_x, curs_y):
         # Backspacing an empty line
-        if (cursor.getpos()[0] == 0 and 
-                cursor.getpos()[1] != 0 and 
-                current_buffer.text[cursor.getpos()[1]] == ''):
-
+        if (curs_x == 0 and curs_y != 0 and current_buffer.text[curs_y] == ''):
             left()
-            del current_buffer.text[cursor.getpos()[1] + 1] 
+            del current_buffer.text[curs_y + 1] 
 
         # Pressing backspace when the cursor is at (0, y != 0)
-        elif cursor.getpos()[0] == 0 and cursor.getpos()[1] != 0:
+        elif curs_x == 0 and curs_y != 0:
             # A temporary value used to move the cursor into the correct position later
-            temp = len(current_buffer.text[cursor.getpos()[1] - 1])
+            temp = len(current_buffer.text[curs_y - 1])
             
             # Appending the line the cursor is on to the above line and then deleting it
-            current_buffer.text[cursor.getpos()[1] - 1] = (current_buffer.text[cursor.getpos()[1] - 1] +
-            current_buffer.text[cursor.getpos()[1]])
-            del current_buffer.text[cursor.getpos()[1]]
+            current_buffer.text[curs_y - 1] = (current_buffer.text[curs_y - 1] +
+            current_buffer.text[curs_y])
+            del current_buffer.text[curs_y]
 
             # Moving the cursor upwards and to the correct position in the x axis
             cursor.setpos(dx=temp)
             cursor.move(0, -1)
 
         # Normal Backspacing
-        elif cursor.getpos()[0] != 0:
-            current_buffer.delchar(*cursor.getpos())
+        elif curs_x != 0:
+            current_buffer.delchar(curs_x, curs_y)
             cursor.move(-1, 0)
 
         else:
             pass
 
-    def enter():
+    def enter(curs_x, curs_y):
+        pass
+
+    def nothing():
         pass
 
 
-
-    commands = {'UP'       : up,
-                'DOWN'     : down,
-                'LEFT'     : left,
-                'RIGHT'    : right,
-                'SPACE'    : space,
-                'BACKSPACE': backspace,
-                'ENTER'    : current_buffer.newline}
+    commands = {'UP'       : lambda : up(*cursor.getpos()),
+                'DOWN'     : lambda : down(*cursor.getpos()),
+                'LEFT'     : lambda : left(*cursor.getpos()),
+                'RIGHT'    : lambda : right(*cursor.getpos()),
+                'SPACE'    : lambda : space(*cursor.getpos()),
+                'BACKSPACE': lambda : backspace(*cursor.getpos()),
+                'ENTER'    : lambda : enter(*cursor.getpos())}
 
 
     keypress = False
@@ -216,7 +216,7 @@ def handle_keys():
                 cursor.move(1, 0)
 
             else:
-                commands.get(user_input.keychar, lambda: None)()
+                commands.get(user_input.keychar, nothing)()
 
             keypress = True
         if not keypress: # Because it is realtime
