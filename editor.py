@@ -152,14 +152,32 @@ def handle_keys():
         cursor.move(1, 0)
 
     def backspace():
+        # Backspacing an empty line
+        if (cursor.getpos()[0] == 0 and 
+                cursor.getpos()[1] != 0 and 
+                current_buffer.text[cursor.getpos()[1]] == ''):
+            left()
+            del current_buffer.text[cursor.getpos()[1] + 1] 
+
         # Pressing backspace when the cursor is at (0, y != 0)
-        if cursor.getpos()[0] == 0 and cursor.getpos()[1] != 0:
-            temp = len(current_buffer.text[cursor.getpos()[1] ])
+        elif cursor.getpos()[0] == 0 and cursor.getpos()[1] != 0:
+            # A temporary value used to move the cursor into the correct position later
+            temp = len(current_buffer.text[cursor.getpos()[1] - 1])
+            
+            # Appending the line the cursor is on to the above line and then deleting it
             current_buffer.text[cursor.getpos()[1] - 1] = (current_buffer.text[cursor.getpos()[1] - 1]+
             current_buffer.text[cursor.getpos()[1]])
             del current_buffer.text[cursor.getpos()[1]]
+
+            # Moving the cursor upwards and to the correct position in the x axis
             cursor.setpos(dx=temp)
             cursor.move(0, -1)
+
+        # Normal Backspacing
+        elif cursor.getpos()[0] != 0:
+            current_buffer.delchar()
+            cursor.move(-1, 0)
+
         else:
             pass
 
@@ -193,7 +211,7 @@ def handle_keys():
                 cursor.move(1, 0)
 
             else:
-                commands.get(user_input.keychar, nothing)()
+                commands.get(user_input.keychar, lambda: None)()
 
             keypress = True
         if not keypress: # Because it is realtime
@@ -226,4 +244,6 @@ if __name__ == "__main__":
 
         cursor.clear()
         current_buffer.clear()
+        
         handle_keys()
+        print(current_buffer.text)
