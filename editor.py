@@ -38,31 +38,22 @@ class Buffer(object):
 
     def addchar(self, char):
         '''Adds a character to the buffer'''
+        # First character of a line
         if len(self.text[cursor.getpos()[1]]) == 0:
             self.text[cursor.getpos()[1]] = char
         else:
             self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] +
             char + 
             self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
-        # Don't indent this
-        cursor.move(1, 0)
 
     def delchar(self):
-        if len(self.text[cursor.getpos()[1]]) == 0:
-            if cursor.getpos()[1] - 1 < 0:
-                pass
-            else:
-                del self.text[cursor.getpos()[1]]
-                cursor.move(0, -1)
-                cursor.setpos(dx=len(self.text[cursor.getpos()[1] - 1]))
+        '''Deletes a character from the buffer'''
+        # First character of a line
+        if len(self.text[cursor.getpos()[1]]) == 1:
+            self.text[cursor.getpos()[1]] = ''
         else:
-            try:
-                self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] + 
-                self.text[cursor.getpos()[1]][cursor.getpos()[0] + 1])
-            except IndexError:
-                self.text[cursor.getpos()[1]] = self.text[cursor.getpos()[1]][:-1]
-            finally:
-                cursor.move(-1, 0)
+            self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0] - 1] +
+            self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
 
     def newline(self):
         self.text.append('')
@@ -113,7 +104,7 @@ class Cursor(object):
 
 def handle_keys():
     '''Handles all the keypresses.
-    Arrow keys are defined here because they won't be used elsewhere
+    Certain commands are defined here because they won't be used elsewhere
     '''
 
     def up():
@@ -126,10 +117,9 @@ def handle_keys():
         else:
             pass
 
-
     def down():
         if cursor.getpos()[1] != (len(current_buffer.text) - 1):
-            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] - 1]:
+            if current_buffer.text[cursor.getpos()[1]] > current_buffer.text[cursor.getpos()[1] + 1]:
                 cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] - 1]))
                 cursor.move(0, 1)
             else:
@@ -157,11 +147,28 @@ def handle_keys():
         else:
             cursor.move(1, 0)
 
+    def space():
+        current_buffer.addchar(' ')
+        cursor.move(1, 0)
+
+    def backspace():
+        # Pressing backspace when the cursor is at (0, y != 0)
+        if cursor.getpos()[0] == 0 and cursor.getpos()[1] != 0:
+            temp = len(current_buffer.text[cursor.getpos()[1] ])
+            current_buffer.text[cursor.getpos()[1] - 1] = (current_buffer.text[cursor.getpos()[1] - 1]+
+            current_buffer.text[cursor.getpos()[1]])
+            del current_buffer.text[cursor.getpos()[1]]
+            cursor.setpos(dx=temp)
+            cursor.move(0, -1)
+        else:
+            pass
+
     def nothing():
         pass
 
-    commands = {'SPACE'    : lambda: current_buffer.addchar(' '),
-                'BACKSPACE': current_buffer.delchar,
+
+    commands = {'SPACE'    : space,
+                'BACKSPACE': backspace,
                 'ENTER'    : current_buffer.newline,
                 'TAB'      : lambda: [current_buffer.addchar(' ') for x in range(4)],
                 'UP'       : up,
@@ -182,6 +189,8 @@ def handle_keys():
                 else:
                     # Without pressing shift
                     current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'))
+                # Don't indent this
+                cursor.move(1, 0)
 
             else:
                 commands.get(user_input.keychar, nothing)()
@@ -216,4 +225,5 @@ if __name__ == "__main__":
         tdl.flush()
 
         cursor.clear()
+        current_buffer.clear()
         handle_keys()
