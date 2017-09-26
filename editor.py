@@ -125,9 +125,7 @@ def handle_keys():
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
         if cursor.getpos()[1] != (len(current_buffer.text) - 1):
             # Moving the cursor to the left is the line below is shorter than the current one
-            if (len(current_buffer.text[cursor.getpos()[1]]) >
-                len(current_buffer.text[cursor.getpos()[1] + 1])):
-
+            if cursor.getpos()[0] > len(current_buffer.text[cursor.getpos()[1] + 1]):
                 cursor.setpos(dx=len(current_buffer.text[cursor.getpos()[1] + 1]))
                 cursor.move(0, 1)
             else:
@@ -164,6 +162,7 @@ def handle_keys():
         if (cursor.getpos()[0] == 0 and 
                 cursor.getpos()[1] != 0 and 
                 current_buffer.text[cursor.getpos()[1]] == ''):
+
             left()
             del current_buffer.text[cursor.getpos()[1] + 1] 
 
@@ -173,7 +172,7 @@ def handle_keys():
             temp = len(current_buffer.text[cursor.getpos()[1] - 1])
             
             # Appending the line the cursor is on to the above line and then deleting it
-            current_buffer.text[cursor.getpos()[1] - 1] = (current_buffer.text[cursor.getpos()[1] - 1]+
+            current_buffer.text[cursor.getpos()[1] - 1] = (current_buffer.text[cursor.getpos()[1] - 1] +
             current_buffer.text[cursor.getpos()[1]])
             del current_buffer.text[cursor.getpos()[1]]
 
@@ -189,16 +188,19 @@ def handle_keys():
         else:
             pass
 
+    def enter():
+        pass
 
 
-    commands = {'SPACE'    : space,
-                'BACKSPACE': backspace,
-                'ENTER'    : current_buffer.newline,
-                'TAB'      : lambda: [current_buffer.addchar(' ') for x in range(4)],
-                'UP'       : up,
+
+    commands = {'UP'       : up,
                 'DOWN'     : down,
                 'LEFT'     : left,
-                'RIGHT'    : right}
+                'RIGHT'    : right,
+                'SPACE'    : space,
+                'BACKSPACE': backspace,
+                'ENTER'    : current_buffer.newline}
+
 
     keypress = False
     for event in tdl.event.get(): # Getting events
@@ -252,4 +254,3 @@ if __name__ == "__main__":
         current_buffer.clear()
         
         handle_keys()
-        print(current_buffer.text)
