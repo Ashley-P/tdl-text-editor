@@ -20,19 +20,22 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [x] Inputting normal characters ([a-z] etc)
 		- [x] Inputting shift + character([A-Z] etc)
 	- [x] Carriage returns
-		- [ ] Carriage Returns insert a line break
+		- [x] Carriage Returns insert a line break
 	- [x] Backspaces
 		- [x] Backspaces append the current line to the one above
 	- [x] Spaces
 	- [x] Tabs
-	- [ ] vim-like keybinds
 	- [ ] Insert
 	- [x] Arrow keys
+	- [ ] Other keybinds
+		- [ ] Cutting
+		- [ ] Copying
 - [ ] Buffer system
 	- [ ] Scrolling
 	- [ ] Text wrapping
 	- [ ] Saving
 	- [ ] Loading
+- [ ] Cursor doesn't block sight of characters
 - [ ] Resizable window
 - [ ] Line numbering
 - [ ] Syntax highlighting

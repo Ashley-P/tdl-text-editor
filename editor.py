@@ -53,10 +53,13 @@ class Buffer(object):
         else:
             self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
 
-    def newline(self):
-        self.text.append('')
-        cursor.setpos(dx=0)
-        cursor.move(0, 1)
+    def newline(self, y):
+        '''Adds a new line'''
+        # If at the end of the buffer
+        if y == len(self.text):
+            self.text.append('')
+        else:
+            self.text = self.text[:y] + [''] + self.text[y:]
 
 class Cursor(object):
     '''Dictates where the keybindings are invoked'''
@@ -108,10 +111,11 @@ def handle_keys():
     '''
 
     def up(curs_x, curs_y):
+        '''Moves the cursor upwards except when on the top most line'''
         # Moving the cursor upwards if cursor position y isn't 0
         if curs_y != 0:
             # Moving the cursor to the left is the line above is shorter than the current one
-            if (len(current_buffer.text[curs_y]) > len(current_buffer.text[curs_y - 1])):
+            if curs_x > len(current_buffer.text[curs_y - 1]):
                 cursor.setpos(dx=len(current_buffer.text[curs_y - 1]))
                 cursor.move(0, -1)
             else:
@@ -120,6 +124,7 @@ def handle_keys():
             pass
 
     def down(curs_x, curs_y):
+        '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
         if curs_y != (len(current_buffer.text) - 1):
             # Moving the cursor to the left is the line below is shorter than the current one
@@ -132,6 +137,9 @@ def handle_keys():
             pass
 
     def left(curs_x, curs_y):
+        '''Moves the cursor to the left, except at the start of a line where it moves it
+        upwards and to the end of that line
+        '''
         if curs_x == 0:
             if curs_y != 0:
                 cursor.setpos(dx=len(current_buffer.text[curs_y - 1]))
@@ -142,6 +150,9 @@ def handle_keys():
             cursor.move(-1, 0)
 
     def right(curs_x, curs_y):
+        '''Moves the cursor to the right, except at the end of a line where it moves it
+        downwards and to the start of that line
+        '''
         if curs_x == len(current_buffer.text[curs_y]):
             if curs_y < (len(current_buffer.text) - 1):
                 cursor.setpos(dx=0)
@@ -152,13 +163,18 @@ def handle_keys():
             cursor.move(1, 0)
 
     def space(curs_x, curs_y):
+        '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
     def backspace(curs_x, curs_y):
+        '''Deletes a character at that cursor position and moves the cursor.
+        Also deletes empty lines and appends the line above with the current line if
+        curs_x == 0
+        '''
         # Backspacing an empty line
         if (curs_x == 0 and curs_y != 0 and current_buffer.text[curs_y] == ''):
-            left()
+            left(curs_x, curs_y)
             del current_buffer.text[curs_y + 1] 
 
         # Pressing backspace when the cursor is at (0, y != 0)
@@ -184,7 +200,21 @@ def handle_keys():
             pass
 
     def enter(curs_x, curs_y):
-        pass
+        '''Creates a new line and moves the cursor down along with any characters
+        to the right of the cursor
+        '''
+        # If the cursor is at the end of a line
+        if curs_x == len(current_buffer.text[curs_y]):
+            current_buffer.newline(curs_y + 1)
+
+        else:
+            current_buffer.newline(curs_y + 1)
+            current_buffer.text[curs_y + 1] = current_buffer.text[curs_y][curs_x:]
+            current_buffer.text[curs_y] = current_buffer.text[curs_y][:curs_x]
+
+        # Don't indent this
+        cursor.setpos(dx=0)
+        cursor.move(0, 1)
 
     def nothing():
         pass
@@ -204,7 +234,7 @@ def handle_keys():
         if event.type == 'KEYDOWN': # Making sure the event is a keypress
             user_input = event
             
-            # All keybinds go here
+            # All keybinds get called in this if statement
             if len(user_input.keychar) == 1: # For single characters
                 if user_input.shift == True:
                     # While pressing shift
@@ -234,7 +264,7 @@ if __name__ == "__main__":
 
     # Other initialisation
     cursor = Cursor(0, 0) # Invoking the cursor, you should only have to do this once
-    buffer1 = Buffer(['']) # Passing an empty array with an empty string
+    buffer1 = Buffer(['']) # Passing an array with an empty string
     keys = keybinds.Keybinds()
     current_buffer = buffer1
 
@@ -251,3 +281,4 @@ if __name__ == "__main__":
         current_buffer.clear()
         
         handle_keys()
+        print(current_buffer.text)
