@@ -36,24 +36,21 @@ class Buffer(object):
             for j in range(len(self.text[i])):
                 con.draw_char(j, i, ' ', self.colour, bg = None) 
 
-    def addchar(self, char):
+    def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
         # First character of a line
-        if len(self.text[cursor.getpos()[1]]) == 0:
-            self.text[cursor.getpos()[1]] = char
+        if len(self.text[y]) == 0:
+            self.text[y] = char
         else:
-            self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0]] +
-            char + 
-            self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
+            self.text[y] = (self.text[y][:x] + char + self.text[y][x:])
 
-    def delchar(self):
+    def delchar(self, x, y):
         '''Deletes a character from the buffer'''
         # First character of a line
-        if len(self.text[cursor.getpos()[1]]) == 1:
-            self.text[cursor.getpos()[1]] = ''
+        if len(self.text[y]) == 1:
+            self.text[y] = ''
         else:
-            self.text[cursor.getpos()[1]] = (self.text[cursor.getpos()[1]][:cursor.getpos()[0] - 1] +
-            self.text[cursor.getpos()[1]][cursor.getpos()[0]:])
+            self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
 
     def newline(self):
         self.text.append('')
@@ -154,7 +151,7 @@ def handle_keys():
             cursor.move(1, 0)
 
     def space():
-        current_buffer.addchar(' ')
+        current_buffer.addchar(' ', *cursor.getpos())
         cursor.move(1, 0)
 
     def backspace():
@@ -182,7 +179,7 @@ def handle_keys():
 
         # Normal Backspacing
         elif cursor.getpos()[0] != 0:
-            current_buffer.delchar()
+            current_buffer.delchar(*cursor.getpos())
             cursor.move(-1, 0)
 
         else:
@@ -211,10 +208,10 @@ def handle_keys():
             if len(user_input.keychar) == 1: # For single characters
                 if user_input.shift == True:
                     # While pressing shift
-                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'))
+                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'), *cursor.getpos())
                 else:
                     # Without pressing shift
-                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'))
+                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'), *cursor.getpos())
                 # Don't indent this
                 cursor.move(1, 0)
 
