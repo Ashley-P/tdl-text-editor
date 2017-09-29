@@ -1,5 +1,6 @@
 import tdl
 import keybinds
+from tkinter import filedialog
 
 
 
@@ -233,6 +234,7 @@ def handle_keys():
         pass
 
 
+    # Non-ASCII keypresses
     commands = {'UP'       : lambda : up(*cursor.getpos()),
                 'DOWN'     : lambda : down(*cursor.getpos()),
                 'LEFT'     : lambda : left(*cursor.getpos()),
@@ -242,6 +244,8 @@ def handle_keys():
                 'ENTER'    : lambda : enter(*cursor.getpos()),
                 'TAB'      : lambda : tab(*cursor.getpos())}
 
+    # Keypresses when Control is held down
+    control_commands = {}
 
     keypress = False
     for event in tdl.event.get(): # Getting events
@@ -250,14 +254,20 @@ def handle_keys():
             
             # All keybinds get called in this if statement
             if len(user_input.keychar) == 1: # For single characters
-                if user_input.shift == True:
+                if user_input.control == True:
+                    # While pressing control
+                    pass
+
+                elif user_input.shift == True:
                     # While pressing shift
-                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'), *cursor.getpos())
+                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'),
+                                           *cursor.getpos())
+                    cursor.move(1, 0)
                 else:
                     # Without pressing shift
-                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'), *cursor.getpos())
-                # Don't indent this
-                cursor.move(1, 0)
+                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'),
+                                           *cursor.getpos())
+                    cursor.move(1, 0)
 
             else:
                 commands.get(user_input.keychar, nothing)()
