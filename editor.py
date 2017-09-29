@@ -1,6 +1,5 @@
 import tdl
 import keybinds
-from tkinter import filedialog
 
 
 
@@ -10,7 +9,6 @@ from tkinter import filedialog
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
 LIMIT_FPS = 60
-ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 
 
 
@@ -314,4 +312,3 @@ if __name__ == "__main__":
         current_buffer.clear()
         
         handle_keys()
-        print(current_buffer.text)
