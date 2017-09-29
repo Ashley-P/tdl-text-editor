@@ -37,6 +37,7 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [ ] Text wrapping
 	- [ ] Saving
 	- [ ] Loading
+- [ ] GUI options for notifications
 - [x] Cursor doesn't block sight of characters
 - [ ] Resizable window
 - [ ] Line numbering

@@ -14,7 +14,6 @@ ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 
 
 
-
 class Buffer(object):
     '''Holds, all the text that is supposed to be displayed on screen.
     Gets pushed to the window and then blitted to the console
