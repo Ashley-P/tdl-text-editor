@@ -27,11 +27,12 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 	- [x] Tabs
 	- [ ] Insert
 	- [x] Arrow keys
-	- [ ] Delete
+	- [x] Delete
 - [ ] Other Functions
 	- [ ] Cutting
 	- [ ] Copying
 - [ ] Buffer system
+ 	- [ ] Switching buffers
 	- [ ] Scrolling
 	- [ ] Text wrapping
 	- [ ] Saving

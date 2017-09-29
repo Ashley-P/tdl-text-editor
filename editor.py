@@ -12,9 +12,8 @@ SCREEN_HEIGHT = 50
 LIMIT_FPS = 60
 ALPHA = 'abcdefghijklmnopqrstuvwxyz'
 
-############
-# Keybinds #
-############
+
+
 
 class Buffer(object):
     '''Holds, all the text that is supposed to be displayed on screen.
@@ -50,10 +49,7 @@ class Buffer(object):
     def delchar(self, x, y):
         '''Deletes a character from the buffer'''
         # First character of a line
-        if len(self.text[y]) == 1:
-            self.text[y] = ''
-        else:
-            self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
+        self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
 
     def newline(self, y):
         '''Adds a new line'''
@@ -62,6 +58,7 @@ class Buffer(object):
             self.text.append('')
         else:
             self.text = self.text[:y] + [''] + self.text[y:]
+
 
 class Cursor(object):
     '''Dictates where the keybindings are invoked'''
@@ -111,6 +108,7 @@ class Cursor(object):
     def getpos(self):
         '''Gets the position of the cursor and returns it as a tuple'''
         return (self.x, self.y)
+
 
 
 def handle_keys():
@@ -184,8 +182,8 @@ def handle_keys():
         '''
         # Backspacing an empty line
         if (curs_x == 0 and curs_y != 0 and current_buffer.text[curs_y] == ''):
+            del current_buffer.text[curs_y] 
             left(curs_x, curs_y)
-            del current_buffer.text[curs_y + 1] 
 
         # Pressing backspace when the cursor is at (0, y != 0)
         elif curs_x == 0 and curs_y != 0:
@@ -230,6 +228,15 @@ def handle_keys():
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
 
+    def delete(curs_x, curs_y):
+        # Pressing Delete while at the end of a line
+        if curs_y != len(current_buffer.text) - 1 and curs_x == len(current_buffer.text[curs_y]):
+            current_buffer.text[curs_y] = (current_buffer.text[curs_y] +
+                                           current_buffer.text[curs_y + 1])
+            del current_buffer.text[curs_y + 1]
+        else:
+            current_buffer.delchar(curs_x + 1, curs_y)
+
     def nothing():
         pass
 
@@ -242,7 +249,8 @@ def handle_keys():
                 'SPACE'    : lambda : space(*cursor.getpos()),
                 'BACKSPACE': lambda : backspace(*cursor.getpos()),
                 'ENTER'    : lambda : enter(*cursor.getpos()),
-                'TAB'      : lambda : tab(*cursor.getpos())}
+                'TAB'      : lambda : tab(*cursor.getpos()),
+                'DELETE'   : lambda : delete(*cursor.getpos())}
 
     # Keypresses when Control is held down
     control_commands = {}
@@ -253,15 +261,17 @@ def handle_keys():
             user_input = event
             
             # All keybinds get called in this if statement
-            if len(user_input.keychar) == 1: # For single characters
-                if user_input.control == True:
-                    # While pressing control
-                    pass
+            if user_input.control == True:
+                # While pressing control
+                control_commands.get(user_input.keychar, nothing)()
 
-                elif user_input.shift == True:
+            elif len(user_input.keychar) == 1: # For single characters
+
+                if user_input.shift == True:
                     # While pressing shift
                     current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'),
                                            *cursor.getpos())
+
                     cursor.move(1, 0)
                 else:
                     # Without pressing shift
