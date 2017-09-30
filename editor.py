@@ -6,8 +6,22 @@ import keybinds
 #############
 # Constants #
 #############
+MAIN_HEIGHT = 50
+PANEL_HEIGHT = 2
 SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
+SCREEN_HEIGHT = MAIN_HEIGHT + PANEL_HEIGHT
+PANEL_Y = SCREEN_HEIGHT - PANEL_HEIGHT
+LIMIT_FPS = 60
+
+
+
+class Buffer(object):
+    '''Holds, all the text that is supposed to be displayed on screen.
+    Gets pushed to the window and then blitted to the console
+    '''
+
+    def __init__(self, text):
+        self.text = text
 LIMIT_FPS = 60
 
 
@@ -283,7 +297,17 @@ def handle_keys():
         if not keypress: # Because it is realtime
             return
 
+def render_all():
+    current_buffer.draw()
+    cursor.draw()
 
+    root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
+    tdl.flush()
+
+    cursor.clear()
+    current_buffer.clear()
+
+    
 ##############################
 # Initialisation & Main Loop #
 ############################## 
@@ -291,6 +315,7 @@ if __name__ == "__main__":
     tdl.set_font('terminal16x16_gs_ro.png', greyscale=True, altLayout=False)
     root = tdl.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="tdl text editor", fullscreen=False)
     con = tdl.Console(SCREEN_WIDTH, SCREEN_HEIGHT)
+    panel = tdl.Console(SCREEN_WIDTH, PANEL_HEIGHT)
     tdl.setFPS(LIMIT_FPS)
 
     # Other initialisation
@@ -302,13 +327,7 @@ if __name__ == "__main__":
     # main loop 
     while not tdl.event.is_window_closed():
 
-        current_buffer.draw()
-        cursor.draw()
+        # Draw everything
+        render_all()
 
-        root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
-        tdl.flush()
-
-        cursor.clear()
-        current_buffer.clear()
-        
         handle_keys()

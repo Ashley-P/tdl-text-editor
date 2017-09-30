@@ -31,6 +31,7 @@ A text editor written using Python3.6 and tdl. Inspired by vi/vim.
 - [ ] Other Functions
 	- [ ] Cutting
 	- [ ] Copying
+	- [ ] Pasting
 - [ ] Buffer system
  	- [ ] Switching buffers
 	- [ ] Scrolling
