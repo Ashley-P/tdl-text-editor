@@ -20,8 +20,9 @@ class Buffer(object):
     Gets pushed to the window and then blitted to the console
     '''
 
-    def __init__(self, text):
+    def __init__(self, text, window):
         self.text = text
+        self.window = window
         self.colour = 0xFFFFFF
         self.bg = 0x000000
 
@@ -29,7 +30,7 @@ class Buffer(object):
         '''Draws the buffer to the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
-                con.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
+                self.window.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
@@ -57,9 +58,10 @@ class Buffer(object):
 class Cursor(object):
     '''Dictates where the keybindings are invoked'''
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, window):
         self.x = x
         self.y = y
+        self.window = window
         self.char = '221'
         self.colour = 0xFFFFFF
         self.bg = 0x000000
@@ -69,11 +71,11 @@ class Cursor(object):
         try:
             self.textchar = current_buffer.text[self.y][self.x] 
             if self.textchar != ' ':
-                con.draw_char(self.x, self.y, self.textchar, self.bg, bg=self.colour)
+                self.window.draw_char(self.x, self.y, self.textchar, self.bg, bg=self.colour)
             else:
-                con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
+                self.window.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
         except IndexError:
-            con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
+            self.window.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
 
     def move(self, dx, dy):
         '''Moves the cursor by the given amount'''
@@ -227,6 +229,16 @@ def handle_keys():
         else:
             current_buffer.delchar(curs_x + 1, curs_y)
 
+    def save():
+        global current_buffer
+        global cursor
+        global message
+
+        current_buffer = panel_buffer 
+        cursor.window = panel
+        cursor.setpos(0, 0)
+        message = 'SAVE'
+
     def nothing():
         pass
 
@@ -243,7 +255,7 @@ def handle_keys():
                 'DELETE'   : lambda : delete(*cursor.getpos())}
 
     # Keypresses when Control is held down
-    control_commands = {}
+    control_commands = {'s' : save}
 
     keypress = False
     for event in tdl.event.get(): # Getting events
@@ -278,8 +290,9 @@ def handle_keys():
 
 def render_all():
     current_buffer.draw()
+    panel_buffer.draw()
     cursor.draw()
-    panel.draw_str(0, 0, "MEMES")
+    panel.draw_str(0, 1, message, fg=0xFF0000)
 
     root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
     root.blit(panel, 0, PANEL_Y, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0)
@@ -287,8 +300,6 @@ def render_all():
 
     con.clear()
     panel.clear()
-    #cursor.clear()
-    #current_buffer.clear()
 
     
 ##############################
@@ -302,10 +313,12 @@ if __name__ == "__main__":
     tdl.setFPS(LIMIT_FPS)
 
     # Other initialisation
-    cursor = Cursor(0, 0) # Invoking the cursor, you should only have to do this once
-    buffer1 = Buffer(['']) # Passing an array with an empty string
+    cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
+    buffer1 = Buffer([''], con) # Passing an array with an empty string
+    panel_buffer = Buffer([''], panel)
     keys = keybinds.Keybinds()
     current_buffer = buffer1
+    message = ''
 
     # main loop 
     while not tdl.event.is_window_closed():
