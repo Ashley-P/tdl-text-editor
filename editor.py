@@ -22,17 +22,6 @@ class Buffer(object):
 
     def __init__(self, text):
         self.text = text
-LIMIT_FPS = 60
-
-
-
-class Buffer(object):
-    '''Holds, all the text that is supposed to be displayed on screen.
-    Gets pushed to the window and then blitted to the console
-    '''
-
-    def __init__(self, text):
-        self.text = text
         self.colour = 0xFFFFFF
         self.bg = 0x000000
 
@@ -41,12 +30,6 @@ class Buffer(object):
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
                 con.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
-
-    def clear(self):
-        '''Clears the buffer from the console'''
-        for i in range(len(self.text)):
-            for j in range(len(self.text[i])):
-                con.draw_char(j, i, ' ', self.colour, bg=self.bg) 
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
@@ -91,10 +74,6 @@ class Cursor(object):
                 con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
         except IndexError:
             con.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
-
-    def clear(self):
-        '''Erase the cursor'''
-        con.draw_char(self.x, self.y, ' ', self.colour, bg=self.bg)
 
     def move(self, dx, dy):
         '''Moves the cursor by the given amount'''
@@ -300,12 +279,16 @@ def handle_keys():
 def render_all():
     current_buffer.draw()
     cursor.draw()
+    panel.draw_str(0, 0, "MEMES")
 
     root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
+    root.blit(panel, 0, PANEL_Y, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0)
     tdl.flush()
 
-    cursor.clear()
-    current_buffer.clear()
+    con.clear()
+    panel.clear()
+    #cursor.clear()
+    #current_buffer.clear()
 
     
 ##############################
@@ -330,4 +313,5 @@ if __name__ == "__main__":
         # Draw everything
         render_all()
 
+        # Handle Keypresses
         handle_keys()
