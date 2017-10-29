@@ -289,8 +289,9 @@ def handle_keys():
             return
 
 def render_all():
-    current_buffer.draw()
-    panel_buffer.draw()
+    for each in buffers:
+        each.draw()
+
     cursor.draw()
     panel.draw_str(0, 1, message, fg=0xFF0000)
 
@@ -316,6 +317,7 @@ if __name__ == "__main__":
     cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
     buffer1 = Buffer([''], con) # Passing an array with an empty string
     panel_buffer = Buffer([''], panel)
+    buffers = [buffer1, panel_buffer]
     keys = keybinds.Keybinds()
     current_buffer = buffer1
     message = ''
