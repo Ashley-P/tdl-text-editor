@@ -2,7 +2,6 @@ import tdl
 import keybinds
 
 
-
 #############
 # Constants #
 #############
@@ -12,7 +11,6 @@ SCREEN_WIDTH = 80
 SCREEN_HEIGHT = MAIN_HEIGHT + PANEL_HEIGHT
 PANEL_Y = SCREEN_HEIGHT - PANEL_HEIGHT
 LIMIT_FPS = 60
-
 
 
 class Buffer(object):
@@ -26,11 +24,13 @@ class Buffer(object):
         self.colour = 0xFFFFFF
         self.bg = 0x000000
 
+
     def draw(self):
         '''Draws the buffer to the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
                 self.window.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
+
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
@@ -41,10 +41,12 @@ class Buffer(object):
         else:
             self.text[y] = (self.text[y][:x] + char + self.text[y][x:])
 
+
     def delchar(self, x, y):
         '''Deletes a character from the buffer'''
         # First character of a line
         self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
+
 
     def newline(self, y):
         '''Adds a new line'''
@@ -78,10 +80,12 @@ class Cursor(object):
         except IndexError:
             self.window.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
 
+
     def move(self, dx, dy):
         '''Moves the cursor by the given amount'''
         self.x += dx
         self.y += dy
+
 
     def setpos(self, dx=None, dy=None):
         '''Directly set the position of the cursor on the screen
@@ -97,6 +101,7 @@ class Cursor(object):
             pass
         else:
             self.y = dy
+
 
     def getpos(self):
         '''Gets the position of the cursor and returns it as a tuple'''
@@ -136,6 +141,7 @@ class NormalKeybinds():
         else:
             pass
 
+
     def down(self, curs_x, curs_y):
         '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
@@ -148,6 +154,7 @@ class NormalKeybinds():
                 cursor.move(0, 1)
         else:
             pass
+
 
     def left(self, curs_x, curs_y):
         '''Moves the cursor to the left, except at the start of a line where it moves it
@@ -162,6 +169,7 @@ class NormalKeybinds():
         else:
             cursor.move(-1, 0)
 
+
     def right(self, curs_x, curs_y):
         '''Moves the cursor to the right, except at the end of a line where it moves it
         downwards and to the start of that line
@@ -175,10 +183,12 @@ class NormalKeybinds():
         else:
             cursor.move(1, 0)
 
+
     def space(self, curs_x, curs_y):
         '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
+
 
     def backspace(self, curs_x, curs_y):
         '''Deletes a character at that cursor position and moves the cursor.
@@ -212,6 +222,7 @@ class NormalKeybinds():
         else:
             pass
 
+
     def enter(self, curs_x, curs_y):
         '''Creates a new line and moves the cursor down along with any characters
         to the right of the cursor
@@ -229,9 +240,11 @@ class NormalKeybinds():
         cursor.setpos(dx=0)
         cursor.move(0, 1)
 
+
     def tab(self, curs_x, curs_y):
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
+
 
     def delete(self, curs_x, curs_y):
         # Pressing Delete while at the end of a line
@@ -241,6 +254,7 @@ class NormalKeybinds():
             del current_buffer.text[curs_y + 1]
         else:
             current_buffer.delchar(curs_x + 1, curs_y)
+
 
     def nothing(self):
         pass
@@ -278,6 +292,10 @@ class NormalKeybinds():
                 keypress = True
             if not keypress: # Because it is realtime
                 return
+
+
+class CommandKeybinds(NormalKeybinds):
+    pass
 
 
 def render_all():
