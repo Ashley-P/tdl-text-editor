@@ -198,7 +198,7 @@ class NormalKeybinds():
         # Backspacing an empty line
         if (curs_x == 0 and curs_y != 0 and current_buffer.text[curs_y] == ''):
             del current_buffer.text[curs_y] 
-            left(curs_x, curs_y)
+            self.left(curs_x, curs_y)
 
         # Pressing backspace when the cursor is at (0, y != 0)
         elif curs_x == 0 and curs_y != 0:
@@ -268,11 +268,7 @@ class NormalKeybinds():
                 user_input = event
                 
                 # All keybinds get called in this if statement
-                if user_input.control == True:
-                    # While pressing control
-                    self.control_commands.get(user_input.keychar, self.nothing)()
-
-                elif len(user_input.keychar) == 1: # For single characters
+                if len(user_input.keychar) == 1: # For single characters
 
                     if user_input.shift == True:
                         # While pressing shift
