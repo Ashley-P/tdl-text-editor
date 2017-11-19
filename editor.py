@@ -2,7 +2,6 @@ import tdl
 import keybinds
 
 
-
 #############
 # Constants #
 #############
@@ -12,7 +11,6 @@ SCREEN_WIDTH = 80
 SCREEN_HEIGHT = MAIN_HEIGHT + PANEL_HEIGHT
 PANEL_Y = SCREEN_HEIGHT - PANEL_HEIGHT
 LIMIT_FPS = 60
-
 
 
 class Buffer(object):
@@ -26,11 +24,13 @@ class Buffer(object):
         self.colour = 0xFFFFFF
         self.bg = 0x000000
 
+
     def draw(self):
         '''Draws the buffer to the console'''
         for i in range(len(self.text)):
             for j in range(len(self.text[i])):
                 self.window.draw_char(j, i, self.text[i][j], self.colour, bg=self.bg) 
+
 
     def addchar(self, char, x, y):
         '''Adds a character to the buffer'''
@@ -41,10 +41,12 @@ class Buffer(object):
         else:
             self.text[y] = (self.text[y][:x] + char + self.text[y][x:])
 
+
     def delchar(self, x, y):
         '''Deletes a character from the buffer'''
         # First character of a line
         self.text[y] = (self.text[y][:x - 1] + self.text[y][x:])
+
 
     def newline(self, y):
         '''Adds a new line'''
@@ -66,6 +68,7 @@ class Cursor(object):
         self.colour = 0xFFFFFF
         self.bg = 0x000000
 
+
     def draw(self):
         '''Draws the cursor'''
         try:
@@ -77,10 +80,12 @@ class Cursor(object):
         except IndexError:
             self.window.draw_char(self.x, self.y, self.char, self.colour, bg=self.colour)
 
+
     def move(self, dx, dy):
         '''Moves the cursor by the given amount'''
         self.x += dx
         self.y += dy
+
 
     def setpos(self, dx=None, dy=None):
         '''Directly set the position of the cursor on the screen
@@ -97,20 +102,37 @@ class Cursor(object):
         else:
             self.y = dy
 
+
     def getpos(self):
         '''Gets the position of the cursor and returns it as a tuple'''
         return (self.x, self.y)
 
 
 
-def handle_keys():
+class NormalKeybinds():
     '''Handles all the keypresses.
     Certain commands are defined here because they won't be used elsewhere
     curs_x == cursor.getpos()[0]
     curs_y == cursor.getpos()[1]
     '''
 
-    def up(curs_x, curs_y):
+    @classmethod
+    def __init__(self):
+        # Non-ASCII keypresses
+        self.commands = {'UP'       : lambda : self.up(*cursor.getpos()),
+                         'DOWN'     : lambda : self.down(*cursor.getpos()),
+                         'LEFT'     : lambda : self.left(*cursor.getpos()),
+                         'RIGHT'    : lambda : self.right(*cursor.getpos()),
+                         'SPACE'    : lambda : self.space(*cursor.getpos()),
+                         'BACKSPACE': lambda : self.backspace(*cursor.getpos()),
+                         'ENTER'    : lambda : self.enter(*cursor.getpos()),
+                         'TAB'      : lambda : self.tab(*cursor.getpos()),
+                         'DELETE'   : lambda : self.delete(*cursor.getpos()),
+                         'ESCAPE'   : self.escape}
+
+
+    @classmethod
+    def up(self, curs_x, curs_y):
         '''Moves the cursor upwards except when on the top most line'''
         # Moving the cursor upwards if cursor position y isn't 0
         if curs_y != 0:
@@ -123,7 +145,9 @@ def handle_keys():
         else:
             pass
 
-    def down(curs_x, curs_y):
+
+    @classmethod
+    def down(self, curs_x, curs_y):
         '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
         if curs_y != (len(current_buffer.text) - 1):
@@ -136,7 +160,9 @@ def handle_keys():
         else:
             pass
 
-    def left(curs_x, curs_y):
+
+    @classmethod
+    def left(self, curs_x, curs_y):
         '''Moves the cursor to the left, except at the start of a line where it moves it
         upwards and to the end of that line
         '''
@@ -149,7 +175,9 @@ def handle_keys():
         else:
             cursor.move(-1, 0)
 
-    def right(curs_x, curs_y):
+
+    @classmethod
+    def right(self, curs_x, curs_y):
         '''Moves the cursor to the right, except at the end of a line where it moves it
         downwards and to the start of that line
         '''
@@ -162,12 +190,16 @@ def handle_keys():
         else:
             cursor.move(1, 0)
 
-    def space(curs_x, curs_y):
+
+    @classmethod
+    def space(self, curs_x, curs_y):
         '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
-    def backspace(curs_x, curs_y):
+
+    @classmethod
+    def backspace(self, curs_x, curs_y):
         '''Deletes a character at that cursor position and moves the cursor.
         Also deletes empty lines and appends the line above with the current line if
         curs_x == 0
@@ -175,7 +207,7 @@ def handle_keys():
         # Backspacing an empty line
         if (curs_x == 0 and curs_y != 0 and current_buffer.text[curs_y] == ''):
             del current_buffer.text[curs_y] 
-            left(curs_x, curs_y)
+            self.left(curs_x, curs_y)
 
         # Pressing backspace when the cursor is at (0, y != 0)
         elif curs_x == 0 and curs_y != 0:
@@ -199,7 +231,9 @@ def handle_keys():
         else:
             pass
 
-    def enter(curs_x, curs_y):
+
+    @classmethod
+    def enter(self, curs_x, curs_y):
         '''Creates a new line and moves the cursor down along with any characters
         to the right of the cursor
         '''
@@ -216,11 +250,15 @@ def handle_keys():
         cursor.setpos(dx=0)
         cursor.move(0, 1)
 
-    def tab(curs_x, curs_y):
+
+    @classmethod
+    def tab(self, curs_x, curs_y):
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
 
-    def delete(curs_x, curs_y):
+
+    @classmethod
+    def delete(self, curs_x, curs_y):
         # Pressing Delete while at the end of a line
         if curs_y != len(current_buffer.text) - 1 and curs_x == len(current_buffer.text[curs_y]):
             current_buffer.text[curs_y] = (current_buffer.text[curs_y] +
@@ -229,77 +267,66 @@ def handle_keys():
         else:
             current_buffer.delchar(curs_x + 1, curs_y)
 
-    def save():
-        global current_buffer
-        global cursor
-        global message
 
-        current_buffer = panel_buffer 
-        cursor.window = panel
-        cursor.setpos(0, 0)
-        message = 'SAVE'
+    @classmethod
+    def escape(self):
+        global current_keybinds
+        current_keybinds = keybinds_list[1]
 
-    def nothing():
+
+    @classmethod
+    def nothing(self):
         pass
 
 
-    # Non-ASCII keypresses
-    commands = {'UP'       : lambda : up(*cursor.getpos()),
-                'DOWN'     : lambda : down(*cursor.getpos()),
-                'LEFT'     : lambda : left(*cursor.getpos()),
-                'RIGHT'    : lambda : right(*cursor.getpos()),
-                'SPACE'    : lambda : space(*cursor.getpos()),
-                'BACKSPACE': lambda : backspace(*cursor.getpos()),
-                'ENTER'    : lambda : enter(*cursor.getpos()),
-                'TAB'      : lambda : tab(*cursor.getpos()),
-                'DELETE'   : lambda : delete(*cursor.getpos())}
+    @classmethod
+    def handle_keys(self):
 
-    # Keypresses when Control is held down
-    control_commands = {'s' : save}
+        keypress = False
+        for event in tdl.event.get(): # Getting events
+            if event.type == 'KEYDOWN': # Making sure the event is a keypress
+                user_input = event
+                
+                # All keybinds get called in this if statement
+                if len(user_input.keychar) == 1: # For single characters
 
-    keypress = False
-    for event in tdl.event.get(): # Getting events
-        if event.type == 'KEYDOWN': # Making sure the event is a keypress
-            user_input = event
-            
-            # All keybinds get called in this if statement
-            if user_input.control == True:
-                # While pressing control
-                control_commands.get(user_input.keychar, nothing)()
+                    if user_input.shift == True:
+                        # While pressing shift
+                        current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'),
+                                               *cursor.getpos())
 
-            elif len(user_input.keychar) == 1: # For single characters
+                        cursor.move(1, 0)
+                    else:
+                        # Without pressing shift
+                        current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'),
+                                               *cursor.getpos())
+                        cursor.move(1, 0)
 
-                if user_input.shift == True:
-                    # While pressing shift
-                    current_buffer.addchar(keys.shift_char.get(user_input.keychar, '?'),
-                                           *cursor.getpos())
-
-                    cursor.move(1, 0)
                 else:
-                    # Without pressing shift
-                    current_buffer.addchar(keys.normal_char.get(user_input.keychar, '?'),
-                                           *cursor.getpos())
-                    cursor.move(1, 0)
+                    self.commands.get(user_input.keychar, self.nothing)()
 
-            else:
-                commands.get(user_input.keychar, nothing)()
+                keypress = True
+            if not keypress: # Because it is realtime
+                return
 
-            keypress = True
-        if not keypress: # Because it is realtime
-            return
+
+class CommandKeybinds(NormalKeybinds):
+    pass
+
 
 def render_all():
-    current_buffer.draw()
-    panel_buffer.draw()
+    for each in buffers:
+        each.draw()
+
     cursor.draw()
-    panel.draw_str(0, 1, message, fg=0xFF0000)
+    panel.draw_str(0, 1, mode_message, 0xFF0000)
 
     root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
     root.blit(panel, 0, PANEL_Y, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0)
     tdl.flush()
 
-    con.clear()
     panel.clear()
+    con.clear()
 
     
 ##############################
@@ -315,10 +342,16 @@ if __name__ == "__main__":
     # Other initialisation
     cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
     buffer1 = Buffer([''], con) # Passing an array with an empty string
-    panel_buffer = Buffer([''], panel)
-    keys = keybinds.Keybinds()
-    current_buffer = buffer1
-    message = ''
+    panel_buffer = Buffer([''], panel) # For typing single lines at the bottom of the screen
+    buffers = [buffer1, panel_buffer] # List of all the buffers so they render
+
+    keys = keybinds.Keybinds() # Normal keys
+    keybinds_list = [NormalKeybinds(), CommandKeybinds()]
+    current_keybinds = keybinds_list[0]
+
+    current_buffer = buffer1 # Assigning the buffer to be written to
+
+    mode_message = 'INSERT'
 
     # main loop 
     while not tdl.event.is_window_closed():
@@ -327,4 +360,4 @@ if __name__ == "__main__":
         render_all()
 
         # Handle Keypresses
-        handle_keys()
+        current_keybinds.handle_keys()
