@@ -115,6 +115,8 @@ class NormalKeybinds():
     curs_x == cursor.getpos()[0]
     curs_y == cursor.getpos()[1]
     '''
+
+    @classmethod
     def __init__(self):
         # Non-ASCII keypresses
         self.commands = {'UP'       : lambda : self.up(*cursor.getpos()),
@@ -125,9 +127,11 @@ class NormalKeybinds():
                          'BACKSPACE': lambda : self.backspace(*cursor.getpos()),
                          'ENTER'    : lambda : self.enter(*cursor.getpos()),
                          'TAB'      : lambda : self.tab(*cursor.getpos()),
-                         'DELETE'   : lambda : self.delete(*cursor.getpos())}
+                         'DELETE'   : lambda : self.delete(*cursor.getpos()),
+                         'ESCAPE'   : self.escape}
 
 
+    @classmethod
     def up(self, curs_x, curs_y):
         '''Moves the cursor upwards except when on the top most line'''
         # Moving the cursor upwards if cursor position y isn't 0
@@ -142,6 +146,7 @@ class NormalKeybinds():
             pass
 
 
+    @classmethod
     def down(self, curs_x, curs_y):
         '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
@@ -156,6 +161,7 @@ class NormalKeybinds():
             pass
 
 
+    @classmethod
     def left(self, curs_x, curs_y):
         '''Moves the cursor to the left, except at the start of a line where it moves it
         upwards and to the end of that line
@@ -170,6 +176,7 @@ class NormalKeybinds():
             cursor.move(-1, 0)
 
 
+    @classmethod
     def right(self, curs_x, curs_y):
         '''Moves the cursor to the right, except at the end of a line where it moves it
         downwards and to the start of that line
@@ -184,12 +191,14 @@ class NormalKeybinds():
             cursor.move(1, 0)
 
 
+    @classmethod
     def space(self, curs_x, curs_y):
         '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
 
+    @classmethod
     def backspace(self, curs_x, curs_y):
         '''Deletes a character at that cursor position and moves the cursor.
         Also deletes empty lines and appends the line above with the current line if
@@ -223,6 +232,7 @@ class NormalKeybinds():
             pass
 
 
+    @classmethod
     def enter(self, curs_x, curs_y):
         '''Creates a new line and moves the cursor down along with any characters
         to the right of the cursor
@@ -241,11 +251,13 @@ class NormalKeybinds():
         cursor.move(0, 1)
 
 
+    @classmethod
     def tab(self, curs_x, curs_y):
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
 
 
+    @classmethod
     def delete(self, curs_x, curs_y):
         # Pressing Delete while at the end of a line
         if curs_y != len(current_buffer.text) - 1 and curs_x == len(current_buffer.text[curs_y]):
@@ -256,10 +268,18 @@ class NormalKeybinds():
             current_buffer.delchar(curs_x + 1, curs_y)
 
 
+    @classmethod
+    def escape(self):
+        global current_keybinds
+        current_keybinds = keybinds_list[1]
+
+
+    @classmethod
     def nothing(self):
         pass
 
 
+    @classmethod
     def handle_keys(self):
 
         keypress = False
@@ -299,14 +319,14 @@ def render_all():
         each.draw()
 
     cursor.draw()
-    panel.draw_str(0, 1, message, fg=0xFF0000)
+    panel.draw_str(0, 1, mode_message, 0xFF0000)
 
     root.blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0)
     root.blit(panel, 0, PANEL_Y, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0)
     tdl.flush()
 
-    con.clear()
     panel.clear()
+    con.clear()
 
     
 ##############################
@@ -324,13 +344,14 @@ if __name__ == "__main__":
     buffer1 = Buffer([''], con) # Passing an array with an empty string
     panel_buffer = Buffer([''], panel) # For typing single lines at the bottom of the screen
     buffers = [buffer1, panel_buffer] # List of all the buffers so they render
+
     keys = keybinds.Keybinds() # Normal keys
-    currentkeys = NormalKeybinds()
+    keybinds_list = [NormalKeybinds(), CommandKeybinds()]
+    current_keybinds = keybinds_list[0]
+
     current_buffer = buffer1 # Assigning the buffer to be written to
 
-    # Panel Messages
-    message = ''
-    panel_messages = [message]
+    mode_message = 'INSERT'
 
     # main loop 
     while not tdl.event.is_window_closed():
@@ -339,4 +360,4 @@ if __name__ == "__main__":
         render_all()
 
         # Handle Keypresses
-        currentkeys.handle_keys()
+        current_keybinds.handle_keys()
