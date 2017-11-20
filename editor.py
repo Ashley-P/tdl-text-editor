@@ -1,5 +1,6 @@
 import tdl
 import keybinds
+from pathlib import Path
 
 
 #############
@@ -116,7 +117,6 @@ class NormalKeybinds():
     curs_y == cursor.getpos()[1]
     '''
 
-    @classmethod
     def __init__(self):
         # Non-ASCII keypresses
         self.commands = {'UP'       : lambda : self.up(*cursor.getpos()),
@@ -131,7 +131,6 @@ class NormalKeybinds():
                          'ESCAPE'   : self.escape}
 
 
-    @classmethod
     def up(self, curs_x, curs_y):
         '''Moves the cursor upwards except when on the top most line'''
         # Moving the cursor upwards if cursor position y isn't 0
@@ -146,7 +145,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def down(self, curs_x, curs_y):
         '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
@@ -161,7 +159,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def left(self, curs_x, curs_y):
         '''Moves the cursor to the left, except at the start of a line where it moves it
         upwards and to the end of that line
@@ -176,7 +173,6 @@ class NormalKeybinds():
             cursor.move(-1, 0)
 
 
-    @classmethod
     def right(self, curs_x, curs_y):
         '''Moves the cursor to the right, except at the end of a line where it moves it
         downwards and to the start of that line
@@ -191,14 +187,12 @@ class NormalKeybinds():
             cursor.move(1, 0)
 
 
-    @classmethod
     def space(self, curs_x, curs_y):
         '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
 
-    @classmethod
     def backspace(self, curs_x, curs_y):
         '''Deletes a character at that cursor position and moves the cursor.
         Also deletes empty lines and appends the line above with the current line if
@@ -232,7 +226,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def enter(self, curs_x, curs_y):
         '''Creates a new line and moves the cursor down along with any characters
         to the right of the cursor
@@ -251,13 +244,11 @@ class NormalKeybinds():
         cursor.move(0, 1)
 
 
-    @classmethod
     def tab(self, curs_x, curs_y):
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
 
 
-    @classmethod
     def delete(self, curs_x, curs_y):
         # Pressing Delete while at the end of a line
         if curs_y != len(current_buffer.text) - 1 and curs_x == len(current_buffer.text[curs_y]):
@@ -268,18 +259,23 @@ class NormalKeybinds():
             current_buffer.delchar(curs_x + 1, curs_y)
 
 
-    @classmethod
     def escape(self):
+        '''Changes to command mode'''
         global current_keybinds
+        global current_buffer
+        global cursor
+        global mode_message
         current_keybinds = keybinds_list[1]
+        cursor.window = panel
+        cursor.setpos(0, 0)
+        current_buffer = panel_buffer
+        mode_message = 'COMMAND'
 
 
-    @classmethod
-    def nothing(self):
+    def nothing(self, *args):
         pass
 
 
-    @classmethod
     def handle_keys(self):
 
         keypress = False
@@ -311,11 +307,54 @@ class NormalKeybinds():
 
 
 class CommandKeybinds(NormalKeybinds):
-    pass
+    '''Used for when you are on the command line'''
+
+    def __init__(self):
+        super().__init__()
+        self.commands.update({'buffer': self.buffer,
+                              'save'  : self.save,
+                              'load'  : self.load})
+
+    def enter(self, curs_x, curs_y):
+        line = panel_buffer.text[0].split()
+        try:
+            self.parse_command(line[0], ' '.join(line[1:]))
+        except IndexError:
+            pass
+
+    
+    def parse_command(self, command, modifier):
+        self.commands.get(command, self.nothing)(modifier)
+        panel_buffer.text = ['']
+        cursor.setpos(0, 0)
+
+    
+    def buffer(self, modifier):
+        pass
+
+
+    def save(self, modifier):
+        '''Saves the current rendered buffer to a file'''
+        file_path = Path(modifier)
+
+        try:
+            file_path.touch()
+
+        except FileExistsError:
+            pass
+
+        finally:
+            with file_path.open(mode='w') as f:
+                for i in render_buffers[1].text:
+                    f.write(i + '\n')
+
+
+    def load(self, modifier):
+        pass
 
 
 def render_all():
-    for each in buffers:
+    for each in render_buffers:
         each.draw()
 
     cursor.draw()
@@ -343,7 +382,7 @@ if __name__ == "__main__":
     cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
     buffer1 = Buffer([''], con) # Passing an array with an empty string
     panel_buffer = Buffer([''], panel) # For typing single lines at the bottom of the screen
-    buffers = [buffer1, panel_buffer] # List of all the buffers so they render
+    render_buffers = buffer_list = [panel_buffer, buffer1] # List of all the buffers
 
     keys = keybinds.Keybinds() # Normal keys
     keybinds_list = [NormalKeybinds(), CommandKeybinds()]
