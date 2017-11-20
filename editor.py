@@ -116,7 +116,6 @@ class NormalKeybinds():
     curs_y == cursor.getpos()[1]
     '''
 
-    @classmethod
     def __init__(self):
         # Non-ASCII keypresses
         self.commands = {'UP'       : lambda : self.up(*cursor.getpos()),
@@ -131,7 +130,6 @@ class NormalKeybinds():
                          'ESCAPE'   : self.escape}
 
 
-    @classmethod
     def up(self, curs_x, curs_y):
         '''Moves the cursor upwards except when on the top most line'''
         # Moving the cursor upwards if cursor position y isn't 0
@@ -146,7 +144,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def down(self, curs_x, curs_y):
         '''Moves the cursor Downwards, except when on the bottom most line'''
         # Moving the cursor downwards if the cursor position y isn't the last line in the buffer
@@ -161,7 +158,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def left(self, curs_x, curs_y):
         '''Moves the cursor to the left, except at the start of a line where it moves it
         upwards and to the end of that line
@@ -176,7 +172,6 @@ class NormalKeybinds():
             cursor.move(-1, 0)
 
 
-    @classmethod
     def right(self, curs_x, curs_y):
         '''Moves the cursor to the right, except at the end of a line where it moves it
         downwards and to the start of that line
@@ -191,14 +186,12 @@ class NormalKeybinds():
             cursor.move(1, 0)
 
 
-    @classmethod
     def space(self, curs_x, curs_y):
         '''Inserts a space at cursor position'''
         current_buffer.addchar(' ', curs_x, curs_y)
         cursor.move(1, 0)
 
 
-    @classmethod
     def backspace(self, curs_x, curs_y):
         '''Deletes a character at that cursor position and moves the cursor.
         Also deletes empty lines and appends the line above with the current line if
@@ -232,7 +225,6 @@ class NormalKeybinds():
             pass
 
 
-    @classmethod
     def enter(self, curs_x, curs_y):
         '''Creates a new line and moves the cursor down along with any characters
         to the right of the cursor
@@ -251,13 +243,11 @@ class NormalKeybinds():
         cursor.move(0, 1)
 
 
-    @classmethod
     def tab(self, curs_x, curs_y):
         current_buffer.addchar('    ', curs_x, curs_y)
         cursor.move(4, 0)
 
 
-    @classmethod
     def delete(self, curs_x, curs_y):
         # Pressing Delete while at the end of a line
         if curs_y != len(current_buffer.text) - 1 and curs_x == len(current_buffer.text[curs_y]):
@@ -268,18 +258,20 @@ class NormalKeybinds():
             current_buffer.delchar(curs_x + 1, curs_y)
 
 
-    @classmethod
     def escape(self):
         global current_keybinds
+        global current_buffer
+        global cursor
         current_keybinds = keybinds_list[1]
+        cursor.window = panel
+        cursor.setpos(0, 0)
+        current_buffer = panel_buffer
 
 
-    @classmethod
     def nothing(self):
         pass
 
 
-    @classmethod
     def handle_keys(self):
 
         keypress = False
@@ -311,7 +303,19 @@ class NormalKeybinds():
 
 
 class CommandKeybinds(NormalKeybinds):
-    pass
+    '''Used for when you are on the command line'''
+
+    def __init__(self):
+        super().__init__()
+
+
+    def enter(self, curs_x, curs_y):
+        line = panel_buffer.text[0].split()
+        self.parse_command(line[0], ' '.join(line[1:]))
+
+    
+    def parse_command(self, command, modifier):
+        pass
 
 
 def render_all():
