@@ -259,6 +259,7 @@ class NormalKeybinds():
 
 
     def escape(self):
+        '''Changes to command mode'''
         global current_keybinds
         global current_buffer
         global cursor
@@ -307,6 +308,7 @@ class CommandKeybinds(NormalKeybinds):
 
     def __init__(self):
         super().__init__()
+        self.commands.update({'save': self.save})
 
 
     def enter(self, curs_x, curs_y):
@@ -315,6 +317,9 @@ class CommandKeybinds(NormalKeybinds):
 
     
     def parse_command(self, command, modifier):
+        self.save()
+
+    def save(self):
         pass
 
 
