@@ -1,5 +1,6 @@
 import tdl
 import keybinds
+from pathlib import Path
 
 
 #############
@@ -263,12 +264,12 @@ class NormalKeybinds():
         global current_keybinds
         global current_buffer
         global cursor
-        global message
+        global mode_message
         current_keybinds = keybinds_list[1]
         cursor.window = panel
         cursor.setpos(0, 0)
         current_buffer = panel_buffer
-        message = 'COMMAND'
+        mode_message = 'COMMAND'
 
 
     def nothing(self, *args):
@@ -310,8 +311,9 @@ class CommandKeybinds(NormalKeybinds):
 
     def __init__(self):
         super().__init__()
-        self.commands.update({'save': self.save})
-
+        self.commands.update({'buffer': self.buffer,
+                              'save'  : self.save,
+                              'load'  : self.load})
 
     def enter(self, curs_x, curs_y):
         line = panel_buffer.text[0].split()
@@ -326,11 +328,29 @@ class CommandKeybinds(NormalKeybinds):
         panel_buffer.text = ['']
         cursor.setpos(0, 0)
 
+    
+    def buffer(self, modifier):
+        pass
+
 
     def save(self, modifier):
-        with open(modifier, 'w') as f:
-            for i in render_buffers[1].text:
-                f.write(i + '\n')
+        '''Saves the current rendered buffer to a file'''
+        file_path = Path(modifier)
+
+        try:
+            file_path.touch()
+
+        except FileExistsError:
+            pass
+
+        finally:
+            with file_path.open(mode='w') as f:
+                for i in render_buffers[1].text:
+                    f.write(i + '\n')
+
+
+    def load(self, modifier):
+        pass
 
 
 def render_all():
