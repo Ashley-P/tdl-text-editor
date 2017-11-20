@@ -263,13 +263,15 @@ class NormalKeybinds():
         global current_keybinds
         global current_buffer
         global cursor
+        global message
         current_keybinds = keybinds_list[1]
         cursor.window = panel
         cursor.setpos(0, 0)
         current_buffer = panel_buffer
+        message = 'COMMAND'
 
 
-    def nothing(self):
+    def nothing(self, *args):
         pass
 
 
@@ -313,18 +315,26 @@ class CommandKeybinds(NormalKeybinds):
 
     def enter(self, curs_x, curs_y):
         line = panel_buffer.text[0].split()
-        self.parse_command(line[0], ' '.join(line[1:]))
+        try:
+            self.parse_command(line[0], ' '.join(line[1:]))
+        except IndexError:
+            pass
 
     
     def parse_command(self, command, modifier):
-        self.save()
+        self.commands.get(command, self.nothing)(modifier)
+        panel_buffer.text = ['']
+        cursor.setpos(0, 0)
 
-    def save(self):
-        pass
+
+    def save(self, modifier):
+        with open(modifier, 'w') as f:
+            for i in render_buffers[1].text:
+                f.write(i + '\n')
 
 
 def render_all():
-    for each in buffers:
+    for each in render_buffers:
         each.draw()
 
     cursor.draw()
@@ -352,7 +362,7 @@ if __name__ == "__main__":
     cursor = Cursor(0, 0, con) # Invoking the cursor, you should only have to do this once
     buffer1 = Buffer([''], con) # Passing an array with an empty string
     panel_buffer = Buffer([''], panel) # For typing single lines at the bottom of the screen
-    buffers = [buffer1, panel_buffer] # List of all the buffers so they render
+    render_buffers = buffer_list = [panel_buffer, buffer1] # List of all the buffers
 
     keys = keybinds.Keybinds() # Normal keys
     keybinds_list = [NormalKeybinds(), CommandKeybinds()]
